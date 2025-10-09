@@ -8,12 +8,12 @@ const { validate } = require("../middleware/validateMiddleware");
 
 const router = express.Router();
 
-// @Route     POST /api/v1/register
+// @Route     POST /api/auth/register
 // @Desc      Used to register the user
 // @Returns   a 201 response with user details on success, or a 400/500 error on failure.
 router.post("/register", validate("register"), register);
 
-// @Route     POST /api/v1/login
+// @Route     POST /api/auth/login
 // @Desc      Used for user login
 // @Returns   a 201 response with user details on success, or a 400/500 error on failure.
 router.post("/login", login);
