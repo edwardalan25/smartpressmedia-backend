@@ -7,7 +7,7 @@ const authRoute = require("./src/routes/auth");
 const oauthRoute = require("./src/routes/oauth");
 const morgan = require("morgan");
 const session = require("express-session");
-require("./src/config/passport")
+require("./src/configs/passport")
 
 const app = express();
 

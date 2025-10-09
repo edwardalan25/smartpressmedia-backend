@@ -51,8 +51,8 @@ coverage/
 *.pid.lock
 
 config/
-migrations/
 models/
+migrations/
 seeders/
 log/
 test/
