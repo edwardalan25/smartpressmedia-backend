@@ -50,10 +50,10 @@ coverage/
 *.seed
 *.pid.lock
 
-config
-migrations
-models
-seeders
-log
-test
-docs
+config/
+migrations/
+models/
+seeders/
+log/
+test/
+docs/
