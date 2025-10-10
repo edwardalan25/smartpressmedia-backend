@@ -1,6 +1,6 @@
 // models/Book.js
 const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/database");
+const { sequelize } = require("../configs/database");
 
 const Book = sequelize.define(
   "Book",

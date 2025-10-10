@@ -5,9 +5,10 @@ const rateLimit = require("express-rate-limit");
 const { notFound, errorHandler } = require("./src/middleware/errorMiddleware");
 const authRoute = require("./src/routes/auth");
 const oauthRoute = require("./src/routes/oauth");
+const questionsRoute = require("./src/routes/questions");
 const morgan = require("morgan");
 const session = require("express-session");
-require("./src/configs/passport")
+require("./src/configs/passport");
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.get("/", (req, res) => {
 // Main Application Routes
 app.use("/api/auth", oauthRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/quiz", questionsRoute);
 
 // Error handling middleware
 app.use(notFound);
