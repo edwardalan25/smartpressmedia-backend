@@ -1,27 +1,26 @@
 const User = require("../model/User");
 const jwt = require("jsonwebtoken");
+const { sanitizeUserInput } = require("../utils/sanitizeUser");
+const { Op } = require("sequelize");
 
 const register = async (req, res, next) => {
   try {
-    const { username, email, password, role } = req.body;
+    // Sanitize input
+    const sanitizedInput = sanitizeUserInput(req.body, true);
 
-    if (!email || !password) {
-      res.status(400);
-      throw new Error("Email and password are required");
-    }
-
-    const userExists = await User.findOne({ where: { email } });
+    // Check if user already exists
+    const userExists = await User.findOne({
+      where: { email: sanitizedInput.email },
+    });
     if (userExists) {
       res.status(400);
       throw new Error("User already exists");
     }
 
-    const user = await User.create({
-      username,
-      email,
-      password,
-      role: role || "user",
-    });
+    // Create user
+    const user = await User.create(sanitizedInput);
+
+    // Generate tokens
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -31,6 +30,7 @@ const register = async (req, res, next) => {
       { expiresIn: "7d" }
     );
     await user.update({ refreshToken });
+
     res.status(201).json({ success: true, token, refreshToken });
   } catch (error) {
     next(error);
@@ -60,4 +60,21 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login };
+const getAll = async (req, res, next) => {
+  try {
+    const users = await User.findAndCountAll({
+      where: {
+        id: { [Op.ne]: req.user.id },
+      },
+    });
+    res.status(200).json({
+      success: true,
+      count: users.count,
+      data: users.rows,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, login, getAll };

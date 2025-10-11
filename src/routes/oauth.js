@@ -26,11 +26,18 @@ router.get(
         }
       );
 
-      res.redirect(`http://localhost:5173/`);
-    //   res.redirect(`http://localhost:5173/auth-success?token=${token}`);
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // true in production
+        sameSite: "Lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.redirect(`http://localhost:5173/auth-success`);
+      //   res.redirect(`http://localhost:5173/auth-success?token=${token}`);
     } catch (error) {
       console.error("google oauth error");
-    //   res.redirect("http://localhost:5173/login?error=google_failed");
+      //   res.redirect("http://localhost:5173/login?error=google_failed");
       res.redirect("http://localhost:5173/");
     }
   }
