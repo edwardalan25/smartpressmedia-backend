@@ -18,6 +18,7 @@ router.post(
 // desc   Return all the authors
 router.get("/get", protect, authorCtrl.getAllAuthors);
 
+
 // Route  GET /api/author/:id
 // desc   Returns perticular author details
 router.get("/:id", protect, authorCtrl.authorDetails);

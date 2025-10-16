@@ -3,15 +3,19 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { notFound, errorHandler } = require("./src/middleware/errorMiddleware");
-const authRoute = require("./src/routes/auth");
-const oauthRoute = require("./src/routes/oauth");
-const authorRoute = require("./src/routes/author");
 const morgan = require("morgan");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const { sequelize } = require("./src/configs/database");
 require("./src/configs/passport");
+
+const authRoute = require("./src/routes/auth");
+const oauthRoute = require("./src/routes/oauth");
+const authorRoute = require("./src/routes/author");
+const categoryRoutes = require("./src/routes/category");
+const productRoutes = require("./src/routes/product");
+const cartRoutes = require("./src/routes/cart")
 
 const app = express();
 app.use(cookieParser());
@@ -23,7 +27,7 @@ app.use(helmet());
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true, 
+    credentials: true,
   })
 );
 
@@ -63,6 +67,11 @@ app.use(
   })
 );
 
+sequelize
+  .sync({ alter: true }) 
+  .then(() => console.log("Database & tables synced"))
+  .catch((err) => console.error("DB sync error:", err));
+
 // Basic route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Server" });
@@ -73,6 +82,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", oauthRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/author", authorRoute);
+app.use("/api/category", categoryRoutes);
+app.use("/api/product", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 // Error handling middleware
 app.use(notFound);
