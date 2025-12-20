@@ -1,35 +1,91 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthorsController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\QuestionController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\DeviceController;
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN AUTH (LOGIN / REGISTER)
+| BASIC CHECK
 |--------------------------------------------------------------------------
 */
+Route::get('/testings', function () {
+    return response()->json(['message' => 'API is working!']);
+});
 
+/*
+|--------------------------------------------------------------------------
+| DEVICE SYNC
+|--------------------------------------------------------------------------
+*/
+Route::post('/device/web-sync', [DeviceController::class, 'syncDeviceWeb']);
+
+/*
+|--------------------------------------------------------------------------
+| AUTH (PUBLIC)
+|--------------------------------------------------------------------------
+*/
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 /*
 |--------------------------------------------------------------------------
-|  Contact fornm
+| CONTACT FORM
 |--------------------------------------------------------------------------
 */
 Route::post('/contact', [ContactController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN DASHBOARD ROUTES
+| WEBSITE (PUBLIC APIs FOR REACT)
 |--------------------------------------------------------------------------
-| auth:sanctum middleware required
+*/
+
+// Products
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
+// Categories
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
+
+// Authors
+Route::get('/authors', [AuthorsController::class, 'index']);
+Route::get('/authors/{id}', [AuthorsController::class, 'show']);
+
+// Blogs
+Route::get('/blogs', [BlogController::class, 'index']);
+Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+
+// Questions (Quiz)
+Route::get('/questions', [QuestionController::class, 'index']);
+Route::get('/questions/{question}', [QuestionController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| CART (PUBLIC)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('cart')->group(function () {
+    Route::get('/', [CartController::class, 'viewCart']);
+    Route::post('/add', [CartController::class, 'addToCart']);
+    Route::put('/item/{id}', [CartController::class, 'updateQuantity']);
+    Route::delete('/item/{id}', [CartController::class, 'removeItem']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN DASHBOARD (PROTECTED)
+|--------------------------------------------------------------------------
+| URL: /api/admin/...
+|--------------------------------------------------------------------------
 */
 Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
 
@@ -39,34 +95,22 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Product CRUD
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    // Products CRUD
+    Route::apiResource('products', ProductController::class);
 
-    // Category CRUD
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::post('/categories', [CategoryController::class, 'store']);
-    Route::get('/categories/{id}', [CategoryController::class, 'show']);
-    Route::put('/categories/{id}', [CategoryController::class, 'update']);
-    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    // Categories CRUD
+    Route::apiResource('categories', CategoryController::class);
 
-    // Author CRUD
-    Route::get('/authors', [AuthorsController::class, 'index']);
-    Route::post('/authors', [AuthorsController::class, 'store']);
-    Route::get('/authors/{id}', [AuthorsController::class, 'show']);
-    Route::put('/authors/{id}', [AuthorsController::class, 'update']);
-    Route::delete('/authors/{id}', [AuthorsController::class, 'destroy']);
+    // Authors CRUD
+    Route::apiResource('authors', AuthorsController::class);
 
-    // Question CRUD
+    // Blogs CRUD
+    Route::apiResource('blogs', BlogController::class);
+
+    // Questions CRUD
     Route::get('/questions', [QuestionController::class, 'index']);
     Route::post('/questions', [QuestionController::class, 'store']);
     Route::get('/questions/{question}', [QuestionController::class, 'show']);
-    Route::post('/questions/{question}', [QuestionController::class, 'update']);
+    Route::put('/questions/{question}', [QuestionController::class, 'update']);
     Route::delete('/questions/{question}', [QuestionController::class, 'destroy']);
-
-    // Blog CRUD
-    Route::apiResource('/blogs', BlogController::class);
 });
