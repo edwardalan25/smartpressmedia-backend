@@ -16,6 +16,8 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
+    'admin_email' => env('ADMIN_EMAIL', 'confineddesigns@gmail.com'),
+    
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations
@@ -94,6 +96,8 @@ return [
                 'postmark',
             ],
         ],
+
+
 
     ],
 
