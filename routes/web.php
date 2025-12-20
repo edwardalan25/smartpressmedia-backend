@@ -23,7 +23,7 @@ Route::get('/', function () {
 // Route::middleware('device')->group(function () {
 
     // Testing
-    Route::get('/testing', function () {
+    Route::get('/testings', function () {
         return ['message' => 'API is working!'];
     });
 
