@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthorsController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\QuestionController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+
+/*
+|--------------------------------------------------------------------------
+|  Contact fornm
+|--------------------------------------------------------------------------
+*/
+Route::post('/contact', [ContactController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
