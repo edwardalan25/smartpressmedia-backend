@@ -13,6 +13,7 @@ class Product extends Model
         'image',
         'price',
         'discount_price',
+        'is_active',
         'description',
     ];
 
