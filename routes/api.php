@@ -74,6 +74,7 @@ Route::middleware('device')->group(function () {
     // Questions (Quiz)
     Route::get('/questions', [QuestionController::class, 'index']);
     Route::get('/questions/{question}', [QuestionController::class, 'show']);
+    Route::post('/quiz/results', [QuestionController::class, 'quizResults']);
 
     /*
     |--------------------------------------------------------------------------

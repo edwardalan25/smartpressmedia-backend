@@ -168,4 +168,74 @@ class QuestionController extends Controller
             null
         );
     }
+
+    /**
+     * Quiz results: return products for correct answers' authors
+     */
+    public function quizResults(Request $request)
+    {
+        $data = $request->validate([
+            'answers' => 'required|array|min:1',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.option_ids' => 'required|array|min:1',
+            'answers.*.option_ids.*' => 'required|exists:options,id',
+        ]);
+
+        $correctQuestionIds = [];
+        $total = count($data['answers']);
+
+        foreach ($data['answers'] as $answer) {
+            $question = Question::with('options')->find($answer['question_id']);
+            if (!$question) {
+                continue;
+            }
+
+            $selectedIds = collect($answer['option_ids'])->unique()->values();
+            $questionOptionIds = $question->options->pluck('id');
+
+            if ($selectedIds->diff($questionOptionIds)->isNotEmpty()) {
+                return $this->formatResponse(
+                    'error',
+                    'invalid-option-for-question',
+                    null,
+                    422
+                );
+            }
+
+            $correctIds = $question->options
+                ->where('is_correct', true)
+                ->pluck('id')
+                ->values();
+
+            $isCorrect = $correctIds->isNotEmpty()
+                && $selectedIds->count() === $correctIds->count()
+                && $selectedIds->diff($correctIds)->isEmpty();
+
+            if ($isCorrect) {
+                $correctQuestionIds[] = $question->id;
+            }
+        }
+
+        $authorIds = Question::whereIn('id', $correctQuestionIds)
+            ->with('authors:id')
+            ->get()
+            ->pluck('authors')
+            ->flatten()
+            ->pluck('id')
+            ->unique()
+            ->values();
+
+        $products = \App\Models\Product::with(['variants', 'category', 'author'])
+            ->whereIn('author_id', $authorIds)
+            ->where('is_active', true)
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        return $this->formatResponse('success', 'quiz-results', [
+            'total_questions' => $total,
+            'correct_questions' => count($correctQuestionIds),
+            'author_ids' => $authorIds,
+            'products' => $products,
+        ]);
+    }
 }

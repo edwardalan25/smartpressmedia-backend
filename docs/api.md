@@ -89,6 +89,17 @@ Device headers required:
 ### Questions (Quiz)
 - `GET /api/questions`
 - `GET /api/questions/{question}`
+- `POST /api/quiz/results`
+  - Payload:
+    ```json
+    {
+      "answers": [
+        { "question_id": 1, "option_ids": [3] },
+        { "question_id": 2, "option_ids": [7, 8] }
+      ]
+    }
+    ```
+  - Response includes `products` from correct answers' authors.
 
 ### Cart
 - `GET /api/cart`
