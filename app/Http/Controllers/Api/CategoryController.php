@@ -40,9 +40,13 @@ class CategoryController extends Controller
         return $this->formatResponse('success', 'category-created-successfully', $category);
     }
 
-    public function show($id)
+    public function show($slug)
     {
-        $category = Category::find($id);
+        $category = Category::where('slug', $slug)->first();
+
+        if (!$category && is_numeric($slug)) {
+            $category = Category::find($slug);
+        }
         if (!$category) return $this->formatResponse('error', 'category-not-found', null, 404);
 
         return $this->formatResponse('success', 'category-fetched-successfully', $category);

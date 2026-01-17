@@ -49,9 +49,13 @@ class BlogController extends Controller
     /**
      * Show Single Blog
      */
-    public function show($id)
+    public function show($slug)
     {
-        $blog = Blog::find($id);
+        $blog = Blog::where('slug', $slug)->first();
+
+        if (!$blog && is_numeric($slug)) {
+            $blog = Blog::find($slug);
+        }
 
         if (!$blog) {
             return $this->formatResponse('error', 'blog-not-found', null, 404);
