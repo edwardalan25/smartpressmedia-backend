@@ -28,6 +28,32 @@ class ProductController extends Controller
     }
 
     /**
+     * Home page data
+     */
+    public function home()
+    {
+        $singleProduct = Product::with(['variants', 'category', 'author'])
+            ->where('is_active', true)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $products = Product::with(['variants', 'category', 'author'])
+            ->where('is_active', true)
+            ->orderBy('id', 'DESC')
+            ->limit(10)
+            ->get();
+
+        return $this->formatResponse(
+            'success',
+            'home-data',
+            [
+                'singleProduct' => $singleProduct,
+                'products' => $products,
+            ]
+        );
+    }
+
+    /**
      * Store product + variants
      */
     public function store(Request $request)

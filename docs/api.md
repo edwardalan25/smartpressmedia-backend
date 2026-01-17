@@ -71,6 +71,18 @@ Device headers required:
     ```
 
 ### Products
+- `GET /api/home`
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "message": "home-data",
+      "data": {
+        "singleProduct": { "id": 1, "name": "Latest product", "...": "..." },
+        "products": [ { "id": 1, "name": "Latest product", "...": "..." } ]
+      }
+    }
+    ```
 - `GET /api/products`
 - `GET /api/products/{slug}`
 

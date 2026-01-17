@@ -56,6 +56,7 @@ Route::middleware('device')->group(function () {
     Route::post('/device/web-sync', [DeviceController::class, 'syncDeviceWeb']);
 
     // Products
+    Route::get('/home', [ProductController::class, 'home']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{slug}', [ProductController::class, 'show']);
 
