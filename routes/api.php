@@ -54,7 +54,7 @@ Route::get('/products/{slug}', [ProductController::class, 'show']);
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 
 // Authors
 Route::get('/authors', [AuthorsController::class, 'index']);
@@ -62,7 +62,7 @@ Route::get('/authors/{id}', [AuthorsController::class, 'show']);
 
 // Blogs
 Route::get('/blogs', [BlogController::class, 'index']);
-Route::get('/blogs/{blog}', [BlogController::class, 'show']);
+Route::get('/blogs/{slug}', [BlogController::class, 'show']);
 
 // Questions (Quiz)
 Route::get('/questions', [QuestionController::class, 'index']);
