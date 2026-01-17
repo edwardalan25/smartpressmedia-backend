@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +21,13 @@ use App\Http\Controllers\Api\DeviceController;
 Route::get('/testings', function () {
     return response()->json(['message' => 'API is working!']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| STRIPE WEBHOOK
+|--------------------------------------------------------------------------
+*/
+Route::post('/stripe/webhook', [CartController::class, 'stripeWebhook']);
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +83,7 @@ Route::middleware('device')->group(function () {
     Route::prefix('cart')->group(function () {
         Route::get('/', [CartController::class, 'viewCart']);
         Route::post('/add', [CartController::class, 'addToCart']);
+        Route::post('/checkout/stripe', [CartController::class, 'checkoutStripe']);
         Route::put('/item/{id}', [CartController::class, 'updateQuantity']);
         Route::delete('/item/{id}', [CartController::class, 'removeItem']);
     });
@@ -112,4 +122,13 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::get('/questions/{question}', [QuestionController::class, 'show']);
     Route::put('/questions/{question}', [QuestionController::class, 'update']);
     Route::delete('/questions/{question}', [QuestionController::class, 'destroy']);
+
+    // Orders (Admin)
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::put('/orders/{id}', [OrderController::class, 'update']);
+
+    // Transactions (Admin)
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/{id}', [TransactionController::class, 'show']);
 });
