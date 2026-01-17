@@ -39,7 +39,7 @@ class ContactController extends Controller
                 'is_user_email_sent' => true,
                 'user_email_error' => null
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $contact->update([
                 'is_user_email_sent' => false,
                 'user_email_error' => $e->getMessage()
@@ -56,7 +56,7 @@ class ContactController extends Controller
                 'is_admin_email_sent' => true,
                 'admin_email_error' => null
             ]);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $contact->update([
                 'is_admin_email_sent' => false,
                 'admin_email_error' => $e->getMessage()

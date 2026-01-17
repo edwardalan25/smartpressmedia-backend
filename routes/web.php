@@ -16,3 +16,11 @@ Route::get('/', function () {
 Route::get('/testings', function () {
     return ['message' => 'API is working!'];
 });
+
+Route::fallback(function () {
+    return response()->json([
+        'status' => 'error',
+        'message' => 'route-not-found',
+        'data' => null,
+    ], 404);
+});

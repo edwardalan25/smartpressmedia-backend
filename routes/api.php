@@ -134,3 +134,11 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
 });
+
+Route::fallback(function () {
+    return response()->json([
+        'status' => 'error',
+        'message' => 'route-not-found',
+        'data' => null,
+    ], 404);
+});
