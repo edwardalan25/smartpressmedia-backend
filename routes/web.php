@@ -13,40 +13,6 @@ Route::get('/', function () {
     return redirect(url('https://smartpressmedia.com/'));
 });
 
-/*
-|--------------------------------------------------------------------------
-| WEBSITE ROUTES
-|--------------------------------------------------------------------------
-| Device middleware required
-*/
-
-// Route::middleware('device')->group(function () {
-
-    // Testing
-    Route::get('/testings', function () {
-        return ['message' => 'API is working!'];
-    });
-
-    // Products
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{slug}', [ProductController::class, 'show']);
-
-    // Categories
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{slug}', [CategoryController::class, 'show']);
-
-    // Authors
-    Route::get('/authors', [AuthorsController::class, 'index']);
-    Route::get('/authors/{id}', [AuthorsController::class, 'show']);
-
-    // Blogs
-    Route::get('/blogs', [BlogController::class, 'index']);
-    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
-
-    // Questions (Quiz)
-    Route::get('/questions', [QuestionController::class, 'index']);
-    Route::get('/questions/{question}', [QuestionController::class, 'show']);
-
-    // Device sync
-    Route::post('/device/web-sync', [DeviceController::class, 'syncDeviceWeb']);
-// });
+Route::get('/testings', function () {
+    return ['message' => 'API is working!'];
+});

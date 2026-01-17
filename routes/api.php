@@ -22,13 +22,6 @@ Route::get('/testings', function () {
 
 /*
 |--------------------------------------------------------------------------
-| DEVICE SYNC
-|--------------------------------------------------------------------------
-*/
-Route::post('/device/web-sync', [DeviceController::class, 'syncDeviceWeb']);
-
-/*
-|--------------------------------------------------------------------------
 | AUTH (PUBLIC)
 |--------------------------------------------------------------------------
 */
@@ -48,36 +41,42 @@ Route::post('/contact', [ContactController::class, 'store']);
 |--------------------------------------------------------------------------
 */
 
-// Products
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::middleware('device')->group(function () {
 
-// Categories
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/categories/{slug}', [CategoryController::class, 'show']);
+    // Device sync
+    Route::post('/device/web-sync', [DeviceController::class, 'syncDeviceWeb']);
 
-// Authors
-Route::get('/authors', [AuthorsController::class, 'index']);
-Route::get('/authors/{id}', [AuthorsController::class, 'show']);
+    // Products
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{slug}', [ProductController::class, 'show']);
 
-// Blogs
-Route::get('/blogs', [BlogController::class, 'index']);
-Route::get('/blogs/{slug}', [BlogController::class, 'show']);
+    // Categories
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/categories/{slug}', [CategoryController::class, 'show']);
 
-// Questions (Quiz)
-Route::get('/questions', [QuestionController::class, 'index']);
-Route::get('/questions/{question}', [QuestionController::class, 'show']);
+    // Authors
+    Route::get('/authors', [AuthorsController::class, 'index']);
+    Route::get('/authors/{id}', [AuthorsController::class, 'show']);
 
-/*
-|--------------------------------------------------------------------------
-| CART (PUBLIC)
-|--------------------------------------------------------------------------
-*/
-Route::prefix('cart')->group(function () {
-    Route::get('/', [CartController::class, 'viewCart']);
-    Route::post('/add', [CartController::class, 'addToCart']);
-    Route::put('/item/{id}', [CartController::class, 'updateQuantity']);
-    Route::delete('/item/{id}', [CartController::class, 'removeItem']);
+    // Blogs
+    Route::get('/blogs', [BlogController::class, 'index']);
+    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
+
+    // Questions (Quiz)
+    Route::get('/questions', [QuestionController::class, 'index']);
+    Route::get('/questions/{question}', [QuestionController::class, 'show']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | CART (PUBLIC)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('cart')->group(function () {
+        Route::get('/', [CartController::class, 'viewCart']);
+        Route::post('/add', [CartController::class, 'addToCart']);
+        Route::put('/item/{id}', [CartController::class, 'updateQuantity']);
+        Route::delete('/item/{id}', [CartController::class, 'removeItem']);
+    });
 });
 
 /*
