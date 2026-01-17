@@ -9,7 +9,8 @@ class Cart extends Model
     protected $fillable = [
         'user_id',
         'device_id',
-        'total_amount'
+        'total_amount',
+        'is_active'
     ];
 
     public function items()
