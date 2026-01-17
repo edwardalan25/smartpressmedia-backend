@@ -50,7 +50,7 @@ Route::post('/contact', [ContactController::class, 'store']);
 
 // Products
 Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index']);
