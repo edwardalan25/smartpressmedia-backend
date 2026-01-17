@@ -89,9 +89,15 @@ class ProductController extends Controller
     /**
      * Show product
      */
-    public function show($id)
+    public function show($slug)
     {
-        $product = Product::with(['variants', 'category', 'author'])->find($id);
+        $product = Product::with(['variants', 'category', 'author'])
+            ->where('slug', $slug)
+            ->first();
+
+        if (!$product && is_numeric($slug)) {
+            $product = Product::with(['variants', 'category', 'author'])->find($slug);
+        }
 
         if (!$product) {
             return $this->formatResponse(
