@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CartController extends Controller
 {
@@ -16,28 +18,46 @@ class CartController extends Controller
      */
     private function getCart(Request $request)
     {
+        $deviceId = $this->resolveDeviceId($request);
         $user = Auth::user();
         if ($user) {
             // logged in user
             $cart = Cart::firstOrCreate(
                 ['user_id' => $user->id],
-                ['device_id' => $request->device_id]
+                ['device_id' => $deviceId]
             );
 
             // merge guest cart
-            if ($request->device_id) {
-                Cart::where('device_id', $request->device_id)
+            if ($deviceId) {
+                Cart::where('device_id', $deviceId)
                     ->whereNull('user_id')
                     ->update(['user_id' => $user->id]);
             }
         } else {
             // guest cart
             $cart = Cart::firstOrCreate(
-                ['device_id' => $request->device_id]
+                ['device_id' => $deviceId]
             );
         }
 
         return $cart->load('items');
+    }
+
+    private function resolveDeviceId(Request $request): ?string
+    {
+        if (!empty($request->device_id)) {
+            return $request->device_id;
+        }
+
+        $device = $request->get('device');
+        if ($device) {
+            if (!empty($device->device_id)) {
+                return $device->device_id;
+            }
+        }
+
+        return $request->header('X-Device-Id')
+            ?? $request->header('X-Fingerprint');
     }
 
     /**
@@ -46,9 +66,12 @@ class CartController extends Controller
     public function addToCart(Request $request)
     {
         $request->validate([
-            'device_id' => 'required',
             'product_id' => 'required|exists:products,id',
-            'product_variant_id' => 'nullable|exists:product_variants,id',
+            'product_variant_id' => [
+                'nullable',
+                Rule::exists('product_variants', 'id')
+                    ->where('product_id', $request->input('product_id')),
+            ],
             'quantity' => 'required|integer|min:1'
         ]);
 
@@ -56,6 +79,12 @@ class CartController extends Controller
 
         $product = Product::findOrFail($request->product_id);
         $price = $product->price;
+        if ($request->product_variant_id) {
+            $variant = ProductVariant::where('id', $request->product_variant_id)
+                ->where('product_id', $product->id)
+                ->firstOrFail();
+            $price = $variant->price;
+        }
 
         $quantity = $request->quantity;
         $totalPrice = $price * $quantity;
@@ -90,13 +119,17 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1'
         ]);
 
+        $cart = $this->getCart($request);
         $item = CartItem::findOrFail($itemId);
+        if ($item->cart_id !== $cart->id) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
         $item->update([
             'quantity' => $request->quantity,
             'total_price' => $item->price * $request->quantity
         ]);
 
-        $this->updateCartTotal($item->cart);
+        $this->updateCartTotal($cart);
 
         return response()->json(['message' => 'Quantity updated']);
     }
@@ -104,10 +137,13 @@ class CartController extends Controller
     /**
      * REMOVE ITEM
      */
-    public function removeItem($itemId)
+    public function removeItem(Request $request, $itemId)
     {
+        $cart = $this->getCart($request);
         $item = CartItem::findOrFail($itemId);
-        $cart = $item->cart;
+        if ($item->cart_id !== $cart->id) {
+            return response()->json(['message' => 'Item not found'], 404);
+        }
         $item->delete();
 
         $this->updateCartTotal($cart);
