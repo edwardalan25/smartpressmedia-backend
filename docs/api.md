@@ -159,6 +159,10 @@ Auth header required:
 - `DELETE /api/admin/delete-account`
 - `POST /api/admin/logout`
 
+### Users (Admin)
+- `GET /api/admin/users`
+  - Query (optional): `role=USER|AUTHOR|SUPER_ADMINISTRATOR|all`
+
 ### Products (CRUD)
 - `GET /api/admin/products`
 - `POST /api/admin/products`
