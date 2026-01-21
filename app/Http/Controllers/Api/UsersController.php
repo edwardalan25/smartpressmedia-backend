@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class UsersController extends Controller
@@ -33,7 +34,7 @@ class UsersController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,NULL,id,deleted_at,NULL',
             'phone' => 'nullable|string|max:255',
-            'password' => 'required|string|min:8',
+            'password' => 'nullable|string|min:8',
             'date_of_birth' => 'nullable|date',
             'device_token' => 'nullable|string',
         ]);
@@ -46,7 +47,7 @@ class UsersController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password ?? Str::random(16)),
             'date_of_birth' => $request->date_of_birth,
             'device_token' => $request->device_token,
             'role' => User::USER,
