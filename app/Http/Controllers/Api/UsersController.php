@@ -36,7 +36,6 @@ class UsersController extends Controller
             'phone' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
             'date_of_birth' => 'nullable|date',
-            'device_token' => 'nullable|string',
         ]);
 
         if ($validate->fails()) {
@@ -49,7 +48,6 @@ class UsersController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password ?? Str::random(16)),
             'date_of_birth' => $request->date_of_birth,
-            'device_token' => $request->device_token,
             'role' => User::USER,
         ]);
 
@@ -81,7 +79,6 @@ class UsersController extends Controller
             'phone' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
             'date_of_birth' => 'nullable|date',
-            'device_token' => 'nullable|string',
         ]);
 
         if ($validate->fails()) {
@@ -93,7 +90,6 @@ class UsersController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'date_of_birth' => $request->date_of_birth,
-            'device_token' => $request->device_token,
             'role' => User::USER,
         ];
 

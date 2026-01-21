@@ -132,7 +132,6 @@ class UserService
             'device_type' => 'required',
             'device_id' => '',
             'device_os' => '',
-            'device_token' => '',
             'fcm_token' => '',
             'app_version' => '',
         ];
@@ -142,10 +141,6 @@ class UserService
     {
         if ($request->device_id) {
             $user->device_id = $request->device_id;
-        }
-
-        if ($request->device_token) {
-            $user->device_token = $request->device_token;
         }
 
         if ($request->device_type) {

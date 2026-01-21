@@ -40,7 +40,6 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
-        'device_token',
         'date_of_birth',
         'role'
     ];

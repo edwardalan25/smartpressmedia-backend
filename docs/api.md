@@ -170,8 +170,7 @@ Auth header required:
       "email": "user@example.com",
       "phone": "123456789",
       "password": "secret123",
-      "date_of_birth": "1990-01-01",
-      "device_token": "optional"
+      "date_of_birth": "1990-01-01"
     }
     ```
   - Role is forced to `USER`
@@ -184,8 +183,7 @@ Auth header required:
       "email": "user@example.com",
       "phone": "123456789",
       "password": "optional",
-      "date_of_birth": "1990-01-01",
-      "device_token": "optional"
+      "date_of_birth": "1990-01-01"
     }
     ```
   - Role is forced to `USER`
