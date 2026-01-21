@@ -162,6 +162,34 @@ Auth header required:
 ### Users (Admin)
 - `GET /api/admin/users`
   - Query (optional): `role=USER|AUTHOR|SUPER_ADMINISTRATOR|all`
+- `POST /api/admin/users`
+  - Payload:
+    ```json
+    {
+      "name": "User",
+      "email": "user@example.com",
+      "phone": "123456789",
+      "password": "secret123",
+      "date_of_birth": "1990-01-01",
+      "device_token": "optional"
+    }
+    ```
+  - Role is forced to `USER`
+- `GET /api/admin/users/{id}`
+- `PUT /api/admin/users/{id}`
+  - Payload:
+    ```json
+    {
+      "name": "User",
+      "email": "user@example.com",
+      "phone": "123456789",
+      "password": "optional",
+      "date_of_birth": "1990-01-01",
+      "device_token": "optional"
+    }
+    ```
+  - Role is forced to `USER`
+- `DELETE /api/admin/users/{id}`
 
 ### Products (CRUD)
 - `GET /api/admin/products`

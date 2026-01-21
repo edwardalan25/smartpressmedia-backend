@@ -106,7 +106,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/users', [UsersController::class, 'index']);
+    Route::apiResource('users', UsersController::class);
 
     // Products CRUD
     Route::apiResource('products', ProductController::class);
