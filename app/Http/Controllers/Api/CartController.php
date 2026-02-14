@@ -180,6 +180,10 @@ class CartController extends Controller
      */
     public function checkoutStripe(Request $request)
     {
+        $request->validate([
+            'customer_email' => 'nullable|email',
+        ]);
+
         $cart = $this->getCart($request)->load('items');
 
         if ($cart->items->isEmpty()) {
@@ -290,8 +294,10 @@ class CartController extends Controller
         $stripe = new StripeClient($secret);
         $successCallbackUrl = $callbackBaseUrl . '/stripe/return/success?session_id={CHECKOUT_SESSION_ID}';
         $cancelCallbackUrl = $callbackBaseUrl . '/stripe/return/cancel?order_id=' . $order->id;
+        $customerEmail = $request->input('customer_email') ?: Auth::user()?->email;
+        $customerEmail = is_string($customerEmail) ? trim($customerEmail) : null;
 
-        $session = $stripe->checkout->sessions->create([
+        $sessionPayload = [
             'mode' => 'payment',
             'line_items' => $lineItems,
             'success_url' => $successCallbackUrl,
@@ -302,8 +308,13 @@ class CartController extends Controller
                 'cart_id' => (string) $cart->id,
                 'device_id' => (string) ($cart->device_id ?? ''),
             ],
-            'customer_email' => Auth::user()?->email,
-        ]);
+        ];
+
+        if ($customerEmail && filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            $sessionPayload['customer_email'] = $customerEmail;
+        }
+
+        $session = $stripe->checkout->sessions->create($sessionPayload);
 
         $order->update(['stripe_session_id' => $session->id]);
 
