@@ -11,10 +11,10 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Stripe\Exception\SignatureVerificationException;
 use Stripe\StripeClient;
 use Stripe\Webhook;
 
@@ -47,7 +47,7 @@ class CartController extends Controller
             );
         }
 
-        return $cart->load('items');
+        return $cart->load('items.product.author');
     }
 
     private function resolveDeviceId(Request $request): ?string
@@ -187,11 +187,12 @@ class CartController extends Controller
         }
 
         $secret = config('services.stripe.secret');
-        $successUrl = config('services.stripe.success_url');
-        $cancelUrl = config('services.stripe.cancel_url');
+        $frontendSuccessUrl = config('services.stripe.success_url');
+        $frontendCancelUrl = config('services.stripe.cancel_url');
         $currency = config('services.stripe.currency', 'usd');
+        $appUrl = rtrim(config('app.url'), '/');
 
-        if (!$secret || !$successUrl || !$cancelUrl) {
+        if (!$secret || !$frontendSuccessUrl || !$frontendCancelUrl || !$appUrl) {
             return $this->formatResponse('error', 'stripe-not-configured', null, 500);
         }
 
@@ -287,11 +288,14 @@ class CartController extends Controller
         });
 
         $stripe = new StripeClient($secret);
+        $successCallbackUrl = $appUrl . '/stripe/return/success?session_id={CHECKOUT_SESSION_ID}';
+        $cancelCallbackUrl = $appUrl . '/stripe/return/cancel?order_id=' . $order->id;
+
         $session = $stripe->checkout->sessions->create([
             'mode' => 'payment',
             'line_items' => $lineItems,
-            'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => $cancelUrl,
+            'success_url' => $successCallbackUrl,
+            'cancel_url' => $cancelCallbackUrl,
             'client_reference_id' => (string) $cart->id,
             'metadata' => [
                 'order_id' => (string) $order->id,
@@ -326,6 +330,120 @@ class CartController extends Controller
     }
 
     /**
+     * STRIPE RETURN (SUCCESS CALLBACK)
+     */
+    public function stripeReturnSuccess(Request $request): RedirectResponse
+    {
+        $frontendSuccessUrl = config('services.stripe.success_url');
+        $frontendCancelUrl = config('services.stripe.cancel_url');
+        $secret = config('services.stripe.secret');
+        $sessionId = (string) $request->query('session_id');
+
+        if (!$frontendSuccessUrl || !$frontendCancelUrl || !$secret || !$sessionId) {
+            return redirect()->away($this->buildRedirectUrl(
+                $frontendCancelUrl ?: config('app.url'),
+                ['status' => 'failed', 'reason' => 'invalid-callback']
+            ));
+        }
+
+        try {
+            $stripe = new StripeClient($secret);
+            $session = $stripe->checkout->sessions->retrieve(
+                $sessionId,
+                ['expand' => ['payment_intent']]
+            );
+        } catch (\Throwable $e) {
+            return redirect()->away($this->buildRedirectUrl(
+                $frontendCancelUrl,
+                ['status' => 'failed', 'reason' => 'session-not-found']
+            ));
+        }
+
+        $order = Order::where('stripe_session_id', $session->id)->first();
+        if (!$order && !empty($session->metadata->order_id)) {
+            $order = Order::find((int) $session->metadata->order_id);
+        }
+
+        $isPaid = ($session->status === 'complete') && ($session->payment_status === 'paid');
+
+        if ($order) {
+            $order->update([
+                'payment_status' => $isPaid ? 'paid' : 'failed',
+                'status' => $isPaid ? 'processing' : 'cancelled',
+                'stripe_payment_intent_id' => is_object($session->payment_intent)
+                    ? ($session->payment_intent->id ?? null)
+                    : ($session->payment_intent ?: null),
+                'paid_at' => $isPaid ? ($order->paid_at ?? now()) : null,
+            ]);
+
+            if ($isPaid && $order->cart_id) {
+                Cart::where('id', $order->cart_id)->update(['is_active' => false]);
+            }
+
+            Transaction::updateOrCreate(
+                ['reference_id' => $session->id],
+                [
+                    'order_id' => $order->id,
+                    'provider' => 'stripe',
+                    'amount' => $order->total_amount,
+                    'currency' => $order->currency,
+                    'status' => $isPaid ? 'success' : 'failed',
+                    'payload' => $session->toArray(),
+                ]
+            );
+        }
+
+        $redirectUrl = $isPaid ? $frontendSuccessUrl : $frontendCancelUrl;
+
+        return redirect()->away($this->buildRedirectUrl(
+            $redirectUrl,
+            [
+                'status' => $isPaid ? 'success' : 'failed',
+                'session_id' => $session->id,
+                'order_id' => $order?->id,
+            ]
+        ));
+    }
+
+    /**
+     * STRIPE RETURN (CANCEL CALLBACK)
+     */
+    public function stripeReturnCancel(Request $request): RedirectResponse
+    {
+        $frontendCancelUrl = config('services.stripe.cancel_url') ?: config('app.url');
+        $orderId = (int) $request->query('order_id');
+
+        if ($orderId > 0) {
+            $order = Order::find($orderId);
+            if ($order && $order->payment_status !== 'paid') {
+                $order->update([
+                    'payment_status' => 'failed',
+                    'status' => 'cancelled',
+                ]);
+
+                if (!empty($order->stripe_session_id)) {
+                    Transaction::updateOrCreate(
+                        ['reference_id' => $order->stripe_session_id],
+                        [
+                            'order_id' => $order->id,
+                            'provider' => 'stripe',
+                            'amount' => $order->total_amount,
+                            'currency' => $order->currency,
+                            'status' => 'failed',
+                            'payload' => ['source' => 'cancel-return'],
+                        ]
+                    );
+                }
+            }
+        }
+
+        return redirect()->away($this->buildRedirectUrl(
+            $frontendCancelUrl,
+            ['status' => 'failed', 'order_id' => $orderId > 0 ? $orderId : null]
+        ));
+    }
+
+    /**
      * STRIPE WEBHOOK
      */
     public function stripeWebhook(Request $request)
@@ -348,6 +466,18 @@ class CartController extends Controller
         // SAME LOGIC AS ORIGINAL (unchanged)
 
         return $this->formatResponse('success', 'webhook-received');
+    }
+
+    private function buildRedirectUrl(string $baseUrl, array $params = []): string
+    {
+        $query = http_build_query(array_filter($params, fn($value) => $value !== null && $value !== ''));
+        if ($query === '') {
+            return $baseUrl;
+        }
+
+        $separator = str_contains($baseUrl, '?') ? '&' : '?';
+
+        return $baseUrl . $separator . $query;
     }
 
     /**

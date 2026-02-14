@@ -23,6 +23,14 @@ Notes:
   - Headers: `Stripe-Signature: <signature>`
   - Body: Stripe webhook payload (raw JSON)
 
+## Stripe Return Callbacks
+- `GET /stripe/return/success?session_id=cs_test_...`
+  - Stripe checkout success ke baad backend is endpoint par aata hai.
+  - Backend Stripe session verify karta hai, order/transaction status update karta hai, phir frontend success URL par redirect karta hai.
+- `GET /stripe/return/cancel?order_id=123`
+  - Stripe checkout cancel hone par backend is endpoint par aata hai.
+  - Backend order/transaction failed/cancelled mark karke frontend cancel URL par redirect karta hai.
+
 ## Auth (Public)
 - `POST /api/login`
   - Payload:
@@ -136,6 +144,10 @@ Device headers required:
     ```json
     { "session_id": "cs_test_...", "checkout_url": "https://checkout.stripe.com/..." }
     ```
+  - Required `.env`:
+    - `STRIPE_SECRET=sk_test_...`
+    - `STRIPE_SUCCESS_URL=http://localhost:3000/checkout/success`
+    - `STRIPE_CANCEL_URL=http://localhost:3000/checkout/cancel`
 
 ## Admin APIs (Auth Required)
 Auth header required:
