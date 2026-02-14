@@ -146,6 +146,7 @@ Device headers required:
     ```
   - Required `.env`:
     - `STRIPE_SECRET=sk_test_...`
+    - `STRIPE_CALLBACK_BASE_URL=http://localhost:8000` (backend domain where `/stripe/return/*` routes exist)
     - `STRIPE_SUCCESS_URL=http://localhost:3000/checkout/success`
     - `STRIPE_CANCEL_URL=http://localhost:3000/checkout/cancel`
 
@@ -306,3 +307,4 @@ Auth header required:
 ### Transactions (Admin)
 - `GET /api/admin/transactions`
 - `GET /api/admin/transactions/{id}`
+

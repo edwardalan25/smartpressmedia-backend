@@ -190,9 +190,9 @@ class CartController extends Controller
         $frontendSuccessUrl = config('services.stripe.success_url');
         $frontendCancelUrl = config('services.stripe.cancel_url');
         $currency = config('services.stripe.currency', 'usd');
-        $appUrl = rtrim(config('app.url'), '/');
+        $callbackBaseUrl = rtrim((string) config('services.stripe.callback_base_url'), '/');
 
-        if (!$secret || !$frontendSuccessUrl || !$frontendCancelUrl || !$appUrl) {
+        if (!$secret || !$frontendSuccessUrl || !$frontendCancelUrl || !$callbackBaseUrl) {
             return $this->formatResponse('error', 'stripe-not-configured', null, 500);
         }
 
@@ -288,8 +288,8 @@ class CartController extends Controller
         });
 
         $stripe = new StripeClient($secret);
-        $successCallbackUrl = $appUrl . '/stripe/return/success?session_id={CHECKOUT_SESSION_ID}';
-        $cancelCallbackUrl = $appUrl . '/stripe/return/cancel?order_id=' . $order->id;
+        $successCallbackUrl = $callbackBaseUrl . '/stripe/return/success?session_id={CHECKOUT_SESSION_ID}';
+        $cancelCallbackUrl = $callbackBaseUrl . '/stripe/return/cancel?order_id=' . $order->id;
 
         $session = $stripe->checkout->sessions->create([
             'mode' => 'payment',
